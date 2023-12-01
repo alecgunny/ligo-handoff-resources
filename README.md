@@ -52,6 +52,26 @@ These could be good PRs for newcomers to finish off to get familiar with the fra
 
 ## `hermes`
 This is one thing I wish I had made time for a while ago, but it largely worked for our use cases so there wasn't much motivation to modernize it.
+Basically, I've begun a [huge PR](https://github.com/ML4GW/hermes/pull/47) that attempts to do several things:
+- Consolidate all the various `hermes.x` libraries into a single `hermes` library that can be installed via pip and pushed to Pypi
+- Remove the `hermes.cloudbreak` and `hermes.stillwater` libraries which are largely unused nowadays (the one useful bit from `stillwater`, `ServerMonitor`, is kept)
+- Remove "special" snapshotter and online average stateful models, which now live in `ml4gw`
+- Allow for specification of certain model inputs/outputs as `states` to support arbitrary stateful models
+
+This last bit is the least complete and unfortunately the most complicated, mostly because the logic in the `Exporter` class is a bit convoluted to support all the different backends we want to support (and requires some familiarity with all of them).
+It might be worth deprecating e.g. keras `SavedModel` support for the time being to simplify this.
+Probably the biggest issue is that it was written before almost anything else I did in this space, and so is probably not as well-designed as it might be if I started it again knowing everything I know now.
+If things look really daunting, it might be worth trying to implement some of the functionality from scratch and seeing if A) you can come up with something better, or B) if the choices I made actually make sense given some constraint I no longer remember.
+
+The other thing that makes this tricky is that Triton configs are built on protobufs, which are inherently non-Pythonic and require learning some special syntax (hopefully this is something LLMs can be helpful with these days).
+The biggest piece of advice I can give you is that setting elements on protobufs will often not work and your best bet is to construct a fresh `ModelConfig` with just the properties you want to update set, and then calling `.MergeFrom(new_config)` on the config you want to update.
+
+Ethan has also brought to my attention a library built by NVIDIA that attempts to make some similar simplifications called [pytriton](http://github.com/triton-inference-server/pytriton).
+I know nothing about it, but if it can remove some of your development burden, it's definitely something that's worth taking some time to play with.
+
+### Other stuff
+I recently pushed some changes to aframe that involve using states with an actual batch dimension. It turns out `hermes` didn't support this, so I made a quick fix for it in [this PR](https://github.com/ML4GW/hermes/pull/48), which works in practice but could probably use an explicit test.
+This change is necessary to making the aframe fix work, so might be worth doing before the other PR gets in, even though the change will just have to be re-implemented.
 
 ## aframe
 The [original `aframe` repo](https:
