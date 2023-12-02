@@ -88,7 +88,7 @@ This change is necessary to making the aframe fix work, so might be worth doing 
 
 ### aframev2 and BNS
 I've begun an attempt to modernize aframe's infrastructure in a [v2 repo](https://github.com/ml4gw/aframev2).
-There's lots of info about where things stand and how to run on the README, but to give a quick rundown
+There's lots of info about where things stand and how to run on the [README](https://github.com/ML4GW/aframev2/blob/main/README.md), but to give a quick rundown
 - Training
     - What kind of model?
         - Supervised, time-domain (i.e. classic aframe)
@@ -98,12 +98,13 @@ There's lots of info about where things stand and how to run on the README, but 
             - Needs an `Architecture` base subclass for architectures that expect 4D inputs (batch, channel, frequency, time), as well as a `torchvision` ResNet that just inherits from this straightforwardly
             - Needs an `SupervisedFrequencyDomainAframe` `LightningModule` that inherits from `SupervisedAframe` and just specifies that the `arch` parameter should be a subclass of the `Architecture` defined above. These last two steps aren't strictly _necessary_, but they help you automatically register valid architectures to train this type of model on and list them when you call `--help` at the CLI.
         - Semi-supervised, time-domain (i.e. autoencoder)
-            - Convolutional autoencoder model tested and working, but only implements correlation loss for now. See comments on the class about options about how to make this more complex, and notes in the [README](TODO LINK) about possible future research directions as well as plotting tools that might help visualizing what the network is learning easier (which I think will be critical here).  
+            - Convolutional autoencoder model tested and working, but only implements correlation loss for now. See comments on the class about options about how to make this more complex, and notes in the [README]([TODO LINK](https://github.com/ML4GW/aframev2/blob/main/README.md)) about possible future research directions as well as plotting tools that might help visualizing what the network is learning easier (which I think will be critical here).  
     - Where do you want to train?
         - On LDG
             - Implemented and working
         - On Nautilus
             - Not implemented, could probably use a `luigi.contrib.KubernetesTask` to run pretty straightforwardly
+            - Trivial to run with a Kubernetes deploy yaml, which is probably a good exercise for folks anyway
 - Hyperparameter tuning
     - Where do you want to run?
         - On LDG
