@@ -68,10 +68,95 @@ The biggest piece of advice I can give you is that setting elements on protobufs
 
 Ethan has also brought to my attention a library built by NVIDIA that attempts to make some similar simplifications called [pytriton](http://github.com/triton-inference-server/pytriton).
 I know nothing about it, but if it can remove some of your development burden, it's definitely something that's worth taking some time to play with.
+Another suggestion I would make as far as reducing our technical debt would be to get rid of `hermes.quiver`'s abstract filesystem implementation and use a standard library like `fsspec` that does all of this stuff way better.
 
 ### Other stuff
 I recently pushed some changes to aframe that involve using states with an actual batch dimension. It turns out `hermes` didn't support this, so I made a quick fix for it in [this PR](https://github.com/ML4GW/hermes/pull/48), which works in practice but could probably use an explicit test.
 This change is necessary to making the aframe fix work, so might be worth doing before the other PR gets in, even though the change will just have to be re-implemented.
 
 ## aframe
-The [original `aframe` repo](https:
+### Paper readiness
+- [MDC inference]()
+    - Should be just about ready, but have not had a chance to run it through the MDC evaluation code
+    - Instructions for how to generate data and evaluate are in the linked PR, as well as some more info as to what's inside here
+    - I think I have plotting code somewhere that points to their DOI results, will try to find that
+- Online benchmarking
+    - TODO: find link
+- Augmentation benchmarking
+    - Code for this can be found [here] # TODO: FIND LINK
+
+### aframev2 and BNS
+I've begun an attempt to modernize aframe's infrastructure in a [v2 repo](https://github.com/ml4gw/aframev2).
+There's lots of info about where things stand and how to run on the README, but to give a quick rundown
+- Training
+    - What kind of model?
+        - Supervised, time-domain (i.e. classic aframe)
+            - Implemented and working
+        - Supervised, frequency-domain (i.e. spectrograms for BNS)
+            - Needs an `SupervisedFrequencyDomainDataset` with an `augment` method that just calls `super().augment(X)` then does `return spectrogram(X)`
+            - Needs an `Architecture` base subclass for architectures that expect 4D inputs (batch, channel, frequency, time), as well as a `torchvision` ResNet that just inherits from this straightforwardly
+            - Needs an `SupervisedFrequencyDomainAframe` `LightningModule` that inherits from `SupervisedAframe` and just specifies that the `arch` parameter should be a subclass of the `Architecture` defined above. These last two steps aren't strictly _necessary_, but they help you automatically register valid architectures to train this type of model on and list them when you call `--help` at the CLI.
+        - Semi-supervised, time-domain (i.e. autoencoder)
+            - Convolutional autoencoder model tested and working, but only implements correlation loss for now. See comments on the class about options about how to make this more complex, and notes in the [README](TODO LINK) about possible future research directions as well as plotting tools that might help visualizing what the network is learning easier (which I think will be critical here).  
+    - Where do you want to train?
+        - On LDG
+            - Implemented and working
+        - On Nautilus
+            - Not implemented, could probably use a `luigi.contrib.KubernetesTask` to run pretty straightforwardly
+- Hyperparameter tuning
+    - Where do you want to run?
+        - On LDG
+            - This mostly works, though as I note in the README, I'm running into an issue with ray's Lightning wrappers that schedules one training job as a distributed job on all available workers, rather than splitting it up into `num_workers` training jobs with `gpus_per_worker` GPUs on each. This might be worth filing an issue with `ray`, but it's also entirely possible there's something I'm missing here
+        - On Nautilus
+            - Works if you already have a cluster spun up and you want to do a direct `apptainer run` (i.e. not using the `luigi` layer)
+            - Have an implementation using Ethan's ray-kube library that can almost automate this at the `luigi` layer, see the README for more details.
+
+### Various other odds and ends
+Will update this with links and paths to various notebooks/analyses/useful snippets of code as I stumble upon them.
+
+## DeepClean
+This one is a bit of a jumble, but I'll try to make things as clear as possible:
+
+My [first cut of rewriting DeepClean](https://github.com/ml4gw/deepclean) was structured a lot like aframe, and is similarly in desperate need of modernization.
+I began this effort with a branch on my personal fork called [ml4gw-introduction](https://github.com/alecgunny/deepclean/tree/ml4gw-introduction), which attempted to begin introducing various `ml4gw` modules into the training and inference pipeline.
+
+However, this work got interrupted when we decided to try to put together a production online pipeline, and this work continued in this branch in the [microservice project](https://github.com/alecgunny/deepclean/tree/ml4gw-introduction/projects/microservice).
+The idea here was to split all of the various DeepClean tasks into various isolated "microservices" that communicated with each other over HTTP.
+An overview of this setup can be found in [this document](https://docs.google.com/document/d/1bwpT6JBJwbfZplZZwxkRmTOERLh603Pus24SqnP79Xs/edit?usp=sharing) (also available in the Google Drive linked to above).
+
+This setup _works_, but as I note in the issues section of that document, there's a problem where the cleaned data comes out gross.
+Using the notebook I mention in that section, I was able to deduce that the issue is with how ONNX implements the transpose convolution operation, which is inconsistent with how Torch does during training (ONNX is the NN framework we use to convert our Torch model to a TensorRT runtime for accelerated inference).
+Given this, and the fact that DeepClean's computational needs are really cheap, the microservice implemenation is going to be gross overkill.
+
+### TAKEAWAY #1: DeepClean should drop inference-as-a-service and asynchronous microservice deployment
+
+Given that, and the fact that I was in the process of modernizing aframe, I have [begun an overhaul of DeepClean](https://github.com/alecgunny/deepclean-demo) that uses more modern infrastructure and attempts to align the offline valiadtion process with the online deployment scenario to better estimate performance and encounter/solve issues earlier on. Issues like
+- Using a narrower frequency band means you need to allow more future predictions to come in before you bandpass filter so that you can have more filter settle-in time
+- DeepClean performance suffers near the edges of predictions, so you should just drop these predictions entirely rather than averaging over them. This induces a time-delay between your input and output that makes keeping track of prediction indices more complicated.
+- Etc.
+
+### TAKEAWAY #2: The online deployment code should be re-implemented in [the new repo](https://github.com/alecgunny/deepclean-demo) using many of the same tools that are in the [microservice project](https://github.com/alecgunny/deepclean/tree/ml4gw-introduction/projects/microservice), but using a torch model in-memory rather than IaaS
+
+The microservice online code does a great job with the messy business of keeping track of time indices during online subtraction, and of monitoring cleaning quality to ensure we're never introducing artifacts.
+If anything, this should simplify things.
+The only major addition would be that you would now need to write code to detect and load new versions of the model, which is functionality Triton used to handle for you.
+
+This should also simplify the training setup, which in the microservice code is running all the time and loading low-latency frames as they get written until it's accumulated enough data to train.
+This is entirely unnecessary, and you can just leverage the offline training code by using standard data-access APIs (i.e. `TimeSeries.get`) and training offline.
+This is trivial in the new framework, and can be done entirely from Python-land.
+I would strongly suggest leveraging this functionality longer term, though since the microservice training code works currently I would also understand wanting to use it.
+Just bear in mind that this means you'll have to use conda to manage the training code's environment, since it will need the gwf file reading libraries.
+This will add some overhead in managing this environment (the new code lets a single `data` project handle all of this and write files to HDF5 archives for downstream projects, though obviously the online cleaning code will need these dependencies too).
+
+This modernized infrastructure will overlap significantly with aframe's modernization, and attempts should be made early on to unify them under a shared framework that handles things like
+- Deploying ray clusters on Kubernetes and launching tuning jobs
+- Setting up S3 credentials and helping with reading/writing objects to cloud storage
+- Setting up Weights & Biases settings in training containers
+- Logging bokeh plots to Weights & Biases for more detailed experiment tracking
+- Managing small syntax differences between Lightning's local CSVLogger and the WandBLogger
+
+This shared framework will be entirely distinct from `ml4gw`, living at sort of the layer above it.
+
+### TAKEAWAY #3: aframe has more functionality than deepclean right now. Rather than copy it over, make it more general
+
+For more details on how the new code works, how to run it, and what it's missing, check out its [README](TODO LINK)
