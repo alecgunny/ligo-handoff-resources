@@ -16,7 +16,7 @@ However, you can either clone their GitHub repos and open the corresponding slid
 
 ### Canvases on FastML Slack
 Slack has a tool called Canvases for building pretty, Markdown-esque docs (it's basically a ripoff of Notion for those who are familiar).
-I've written one or two that might prove helpful:
+I've written one or two that might prove helpful (requires you to have access to the FastML Slack):
 - [Review of aframe analyses](https://fastml.slack.com/docs/T6RPRPG92/F05NP48K04R)
 - [Links to papers](https://fastml.slack.com/docs/T6RPRPG92/F05PVH651S6) about sensitivity analysis. Forms the foundation for how we evaluate `aframe`.
 - [Initial sketch of data access overview document for new comers](https://fastml.slack.com/docs/T6RPRPG92/F0605DUA4J3). Folks should consider continuing to fill this out with whatever tidbits they've found helpful.
