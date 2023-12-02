@@ -76,14 +76,15 @@ This change is necessary to making the aframe fix work, so might be worth doing 
 
 ## aframe
 ### Paper readiness
-- [MDC inference]()
+- [MDC inference](https://github.com/ML4GW/aframe/pull/469)
     - Should be just about ready, but have not had a chance to run it through the MDC evaluation code
     - Instructions for how to generate data and evaluate are in the linked PR, as well as some more info as to what's inside here
     - I think I have plotting code somewhere that points to their DOI results, will try to find that
 - Online benchmarking
-    - TODO: find link
+    - In the [online-benchmarking.ipynb](./online-benchmarking.ipynb) notebook in this repo
+    - Might take some massaging, and I don't have a specific environment for it, but it should be pretty clear to make work.
 - Augmentation benchmarking
-    - Code for this can be found [here] # TODO: FIND LINK
+    - In the [augmentation-benchmarking.ipynb](./augmentation-benchmarking.ipynb) notebook in this repo
 
 ### aframev2 and BNS
 I've begun an attempt to modernize aframe's infrastructure in a [v2 repo](https://github.com/ml4gw/aframev2).
@@ -113,6 +114,7 @@ There's lots of info about where things stand and how to run on the README, but 
 
 ### Various other odds and ends
 Will update this with links and paths to various notebooks/analyses/useful snippets of code as I stumble upon them.
+- [Offline benchmarking notebook](./offline-benchmarking.ipynb): code I use to read the CSV produced by the ServerMonitor and plot things like throughput, queue latency, etc.
 
 ## DeepClean
 This one is a bit of a jumble, but I'll try to make things as clear as possible:
