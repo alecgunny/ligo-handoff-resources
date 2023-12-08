@@ -167,4 +167,4 @@ This shared framework will be entirely distinct from `ml4gw`, living at sort of 
 
 ### TAKEAWAY #3: aframe has more functionality than deepclean right now. Rather than copy it over, make it more general
 
-For more details on how the new code works, how to run it, and what it's missing, check out its [README](TODO LINK)
+For more details on how the new code works, how to run it, and what it's missing, check out its [README](https://github.com/alecgunny/deepclean-demo#readme)
