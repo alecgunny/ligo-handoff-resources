@@ -116,9 +116,14 @@ There's lots of info about where things stand and how to run on the [README](htt
 ### Various other odds and ends
 Will update this with links and paths to various notebooks/analyses/useful snippets of code as I stumble upon them.
 - [Offline benchmarking notebook](./offline-benchmarking.ipynb): code I use to read the CSV produced by the ServerMonitor and plot things like throughput, queue latency, etc.
+- [Slightly cleaner rewrite of the ledger library](https://github.com/alecgunny/BBHNet/tree/luigi-infer/aframe/utils/aframe/ledger) I started in an old aframe branch that's meant to mimic more of the API of [pytables](https://www.pytables.org/), on which it could potentially be built eventually and which is supposed to be pretty fast for data loading.
+That said, I spent some time playing with `pytables` over the summer and found that the API is not quite what we need, though I can't recall all of the exact details as to why.
+I also didn't find it particularly fast for our dataloading use case (random sampling of waveforms), though with Deep's torch-based waveform generation maybe this is a moot point.
 
 ## DeepClean
-This one is a bit of a jumble, but I'll try to make things as clear as possible:
+This one is a bit of a jumble, but I'll try to make things as clear as possible.
+If you want the TL;DR, just see the [README](https://github.com/alecgunny/deepclean-demo#readme) from the current project, in particular the [Where Things Stand section](https://github.com/alecgunny/deepclean-demo#where-things-stand).
+For the full story:
 
 My [first cut of rewriting DeepClean](https://github.com/ml4gw/deepclean) was structured a lot like aframe, and is similarly in desperate need of modernization.
 I began this effort with a branch on my personal fork called [ml4gw-introduction](https://github.com/alecgunny/deepclean/tree/ml4gw-introduction), which attempted to begin introducing various `ml4gw` modules into the training and inference pipeline.
