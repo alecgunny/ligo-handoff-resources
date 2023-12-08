@@ -81,10 +81,10 @@ This change is necessary to making the aframe fix work, so might be worth doing 
     - Instructions for how to generate data and evaluate are in the linked PR, as well as some more info as to what's inside here
     - I think I have plotting code somewhere that points to their DOI results, will try to find that
 - Online benchmarking
-    - In the [online-benchmarking.ipynb](./online-benchmarking.ipynb) notebook in this repo
+    - In the [`online-benchmarking.ipynb`](./notebooks/online-benchmarking.ipynb) notebook in this repo
     - Might take some massaging, and I don't have a specific environment for it, but it should be pretty clear to make work.
 - Augmentation benchmarking
-    - In the [augmentation-benchmarking.ipynb](./augmentation-benchmarking.ipynb) notebook in this repo
+    - In the [`augmentation-benchmarking.ipynb`](./notebooks/augmentation-benchmarking.ipynb) notebook in this repo
 
 ### aframev2 and BNS
 I've begun an attempt to modernize aframe's infrastructure in a [v2 repo](https://github.com/ml4gw/aframev2).
@@ -115,7 +115,7 @@ There's lots of info about where things stand and how to run on the [README](htt
 
 ### Various other odds and ends
 Will update this with links and paths to various notebooks/analyses/useful snippets of code as I stumble upon them.
-- [Offline benchmarking notebook](./offline-benchmarking.ipynb): code I use to read the CSV produced by the ServerMonitor and plot things like throughput, queue latency, etc.
+- [Offline benchmarking notebook](./notebooks/offline-benchmarking.ipynb): code I use to read the CSV produced by the ServerMonitor and plot things like throughput, queue latency, etc.
 - [Slightly cleaner rewrite of the ledger library](https://github.com/alecgunny/BBHNet/tree/luigi-infer/aframe/utils/aframe/ledger) I started in an old aframe branch that's meant to mimic more of the API of [pytables](https://www.pytables.org/), on which it could potentially be built eventually and which is supposed to be pretty fast for data loading.
 That said, I spent some time playing with `pytables` over the summer and found that the API is not quite what we need, though I can't recall all of the exact details as to why.
 I also didn't find it particularly fast for our dataloading use case (random sampling of waveforms), though with Deep's torch-based waveform generation maybe this is a moot point.
